@@ -1,0 +1,146 @@
+MODELS
+
+I went for a very simplistic datamodel
+I made 2 classes: Patient and Carer, each one has a first and a last name. 
+Patient also has an array of carers.
+
+Making javascript strongly typed is near impossible, so I went with the easiest way I
+could think of. I decided to just throw an error if the first or last name is anything
+but a string. I did not add a check on carers because this happens when you post it
+through the api.
+
+The patient model also has functions to add or remove carers.
+
+I could have used inheritence, but I did not because the models are too simple to
+actually benefit from it. If there where more types of people I would have made a 
+parent class.
+
+
+
+ROUTES
+
+The routes are very basic as well, but I had to make some decisions here.
+Going to /patients with a get request will get you a list of all patients.
+This just seemed like the most obvious thing to do since you don't specify anything.
+If you use a post request you have to include a json object with a first and last
+name to add a patient to the list. I decided to go for post since you add something
+entirely new.
+
+The exact same reasoning is behind the get and delete for /patients/:fName/:lName
+except that the delete will obviously delete the specified patient while get will
+just show one.
+I decided to use fName and lName as parameters because using an index adds lots of 
+complexity to the code while it doesn't really make it easier for the user. It also
+doesn't make it harder, so I would have used an index if I used a database where
+I could easily add an index to the patients/carers.
+
+The /patients/:fName/:lName/addCarer route is one I had to think about some more
+I wasn't sure if I would use a post, put or patch request. Since adding one carer
+shouldn't require the user to retype all other carers I decided against put.
+Patch and post seemed like two equal choices but in the end I decided that a Carer,
+even though it's somewhat part of a patient is still more something on it's own.
+That is why I decided to use a post request to add a carer to a patient.
+
+The final route is basically the same as the delete for a patient. The only difference
+is that you have to add the uri for the first and last name of the carer you want to delete.
+
+
+
+TECH
+I decided to use javascript (ES6) to build a node.js server with express.
+I used express because making a restfull api with plain js is just very annoying.
+Express builds the responses and parses the requests for me so I don't have to worry
+about the important, but tedious parts of a web server.
+I also used nodemon to make testing easier, without it I'd have to restart the server
+after every small change.
+
+
+
+HOW TO RUN
+Just go to the root folder that contains index.js and use the command "npm start"
+This will install all the necessary modules locally and start the server on port 3000.
+
+
+
+HOW TO TEST
+For testing purposes I would recommend using postman. This is a chrome app made for
+this purpose. after starting up nodemon you can just specify the url
+and what type of request you want to use. To the left of the url you
+specify the type and underneath the url you can add the body.
+(See screenshots in postman directory)
+
+Some example commands are:
+
+URL: localhost:3000/patients
+GET (Will show all patients)
+    (no body)
+POST (invalid)
+    {
+	    "fName": 12,
+	    "lName": "Demeulenaere"
+    }
+POST (invalid)
+    {
+	    "fName": true,
+	    "lName": "Demeulenaere"
+    }
+POST (Will add patient Lee Provoost)
+    {
+	    "fName": "Lee",
+	    "lName": "Provoost"
+    }
+
+
+URL: localhost:3000/patients/Sam/Demeulenaere
+GET (will return patient Sam Demeulenaere)
+    (no body)
+DELETE (Will delete patient Sam Demeulenaere)
+    (no body)
+
+
+URL: localhost:3000/patients/Sam/Demeulenaereeeeeee
+GET (will return error message)
+    (no body)
+DELETE (will return error message)
+    (no body)
+
+
+URL: localhost:3000/patients/Sam/Demeulenaere/addCarer
+POST (invalid)
+    {
+        "fName": 12
+        "lName": "Person"
+    }
+POST (invalid)
+    {
+        "fName": false
+        "lName": "Person"
+    }
+POST (Will add Some Person as carer to Sam Demeulenaere)
+    {
+        "fName": "Some"
+        "lName": "Person"
+    }
+
+
+URL: localhost:3000/patients/Sam/Demeulenaereeeeeee/addCarer
+POST (Will return error message)
+    {
+        "fName": "Some"
+        "lName": "Person"
+    }
+
+
+URL: localhost:3000/patients/Sam/Demeulenaere/Some/Person
+DELETE (will remove carer Some Person from Sam Demeulenaere)
+    (no body)
+
+
+URL: localhost:3000/patients/Sam/Demeulenaereeeeeee/Some/Person
+DELETE (Will return error message)
+    (no body)
+
+
+URL: localhost:3000/patients/Sam/Demeulenaere/Some/Personnnnnnn
+DELETE (Will return error message)
+    (no body)
